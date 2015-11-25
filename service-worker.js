@@ -37,9 +37,19 @@ self.addEventListener('fetch', function(event) {
             var delta = endTime - startTime; 
             elapsedSinceInit += delta; 
             console.log('consume finished for ' + url + ', elapsed:', delta);
+
             completedRequests[url] = activeRequests[url];
+            completedRequests[url].KB = (completedRequests[url].bytes/1024).toFixed(1) + 'KB';
+
             delete activeRequests[url];
-            console.table(completedRequests);
+
+            // log the completed requests if none outstanding
+            if (Object.keys(activeRequests).length == 0) {
+                console.log('No outstanding requests, completed requests are:');
+                console.table(completedRequests);
+            } else {
+                console.info(Object.keys(activeRequests).length,'in-flight requests');
+            }
         })
         .catch((e) => console.error("something went wrong with the fetch() request", e));
 
