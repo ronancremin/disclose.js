@@ -4,18 +4,13 @@
     <meta charset="utf-8">
     <meta name="description" content="Sample of selective caching with service workers.">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Service Worker Sample: Selective Caching</title>
+    <title>disclose.js demonstration</title>
     <script>
-      // Service workers require HTTPS (http://goo.gl/lq4gCo). If we're running on a real web server
-      // (as opposed to localhost on a custom port, which is whitelisted), then change the protocol to HTTPS.
+      // Service workers require HTTPS unless localhost
       if ((!location.port || location.port == "80") && location.protocol != 'https:') {
         location.protocol = 'https:';
       }
     </script>
-
-    <!--
-    <link rel="stylesheet" href="main.css">
-    -->
 
     <style>
       .output {
@@ -84,11 +79,10 @@
                 + event.data.elapsedSinceInit + ' ms');
         });
       } else {
-        // The current browser doesn't support service workers.
+        // Browser doesn't support service workers.
         alert('Service workers are not supported in the current browser.');
         console.error('Service workers are not supported in the current browser.');
       }
-
 
 
     var el = document.getElementById("byteCount");
@@ -102,12 +96,10 @@
        navigator.serviceWorker.controller.postMessage({'command': 'say-hello!'});
     }
 
-
     function numberWithCommas(x) {
         return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
     </script>
 
-    <!-- Built with love using Web Starter Kit -->
   </body>
 </html>
