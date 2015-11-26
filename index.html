@@ -40,11 +40,11 @@
         <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image3&w=140&h=140" />
         <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image4&w=160&h=160" />
         <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image5&w=180&h=180" />
-        <!--
         <img src="http://lorempixel.com/640/480/abstract/" />
         <img src="http://lorempixel.com/640/480/sports/" />
         <img src="http://lorempixel.com/640/480/business/" />
         <img src="http://lorempixel.com/640/480/technics/" />
+        <!--
         -->
 
         <div id="byteCount">service worker uninitialised</div>
@@ -87,25 +87,27 @@
             }
 
 
-        var el = document.getElementById("byteCount");
-        if (el.addEventListener) {
-            el.addEventListener("click", resetCounter, false);
-        } else {
-            el.attachEvent('onclick', resetCounter);
-        }
+            var el = document.getElementById("byteCount");
+            if (el.addEventListener) {
+                el.addEventListener("click", resetCounter, false);
+            } else {
+                el.attachEvent('onclick', resetCounter);
+            }
 
-        function resetCounter() {
-            navigator.serviceWorker.controller.postMessage({'command': 'reset'});
-        }
+            // reset the service worker stats
+            function resetCounter() {
+                navigator.serviceWorker.controller.postMessage({'command': 'reset'});
+            }
 
-        function numberWithCommas(x) {
-            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
+            // return a nicely formatted string version of a floating point number
+            function numberWithCommas(x) {
+                return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
 
-        function bytesToKb(x) {
-            return numberWithCommas((x/1024).toFixed(0));
-        }
+            // return a string version of x converted bytes with nice formatting
+            function bytesToKb(x) {
+                return numberWithCommas((x/1024).toFixed(0));
+            }
         </script>
-
     </body>
 </html>

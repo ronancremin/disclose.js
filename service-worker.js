@@ -7,9 +7,6 @@ var maxBandwidth = 0,
     minBandwidth = 0,
     currentBandwidth = 0;
 
-var datachunks = {};
-var foo = '';
-
 
 self.clients.matchAll().then(function(clients) {
     clients.forEach(function(client) {
@@ -29,7 +26,6 @@ self.addEventListener('fetch', function(event) {
         url = event.request.url;
     console.log('Handling fetch event for', url);
     activeRequests[url] = {bytes: 0, startTime: Date.now(), elapsedTime: 0};
-    datachunks[url] = {bytes: ''};
     requestsSinceInit++;
     updateBrowser();
 
@@ -48,15 +44,6 @@ self.addEventListener('fetch', function(event) {
             if (Object.keys(activeRequests).length == 0) {
                 console.log('No outstanding requests, completed requests are:');
                 console.table(completedRequests);
-                console.table(datachunks);
-                console.log('bytes since init', bytesSinceInit);
-                console.log(foo);
-                var tmp = 0;
-                for (var key in completedRequests) {
-                    tmp += completedRequests[key].bytes;
-                }
-                console.log('added up bytes:', tmp);
-
             }
         })
     .then(() => updateBrowser())
@@ -95,18 +82,12 @@ function consume(reader, total, url) {
             return;
         }
         total += result.value.byteLength;
-        //console.warn(result.value.byteLength, bytesSinceInit);
-
-
-        datachunks[url].bytes += result.value.byteLength + ' ';
-        foo += result.value.byteLength + ' + ';
 
         var activeRequest = activeRequests[url];
         activeRequest.bytes = total;
         activeRequest.elapsedTime = Date.now() - activeRequest.startTime;
 
-        bytesSinceInit += total;
-        //console.log("  received " + result.value.byteLength );
+        bytesSinceInit += result.value.byteLength;
         updateBrowser();
         return consume(reader, total, url);
     });
@@ -144,10 +125,8 @@ function calculateBandwidth() {
     }
 
     var tmpBandwidth = 0;
-    //console.table(activeRequests);
     for (var url in activeRequests) {
         if (activeRequests.hasOwnProperty(url)) {
-            //console.log(url, activeRequests[url].elapsedTime, activeRequests[url].bytes);
             if (activeRequests[url].elapsedTime) { // check for non-zero
                 tmpBandwidth += activeRequests[url].bytes / activeRequests[url].elapsedTime * 1000;
             }
@@ -155,5 +134,4 @@ function calculateBandwidth() {
     }
     if (tmpBandwidth != 0) currentBandwidth = tmpBandwidth;
     maxBandwidth = currentBandwidth > maxBandwidth ? currentBandwidth : maxBandwidth;
-    //console.log('Current bandwidth:', (currentBandwidth/1024).toFixed(1), 'KB/s, max bandwidth:', (maxBandwidth/1024).toFixed(1));
 }
