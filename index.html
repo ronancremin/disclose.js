@@ -74,9 +74,10 @@
         navigator.serviceWorker.addEventListener('message', function(event) {
           var target = document.getElementById('byteCount');
           target.textContent = numberWithCommas(event.data.bytesSinceInit + ' bytes, ' 
-                + event.data.requestsSinceInit + ' reqs, '
-                + (event.data.bytesPerSecond / 1024).toFixed(0) + ' KB/s, '
-                + event.data.elapsedSinceInit + ' ms');
+                + event.data.requestsSinceInit + ' reqs since init, '
+                + 'current bw: ' + (event.data.currentBandwidth / 1024).toFixed(0) + ' KB/s, '
+                + 'max  bw: ' + (event.data.maxBandwidth/1024).toFixed(0) + ' KB/s, '
+                + event.data.inFlightRequests + ' active reqs');
         });
       } else {
         // Browser doesn't support service workers.
@@ -93,7 +94,7 @@
     }
 
     function resetCounter() {
-       navigator.serviceWorker.controller.postMessage({'command': 'say-hello!'});
+       navigator.serviceWorker.controller.postMessage({'command': 'reset'});
     }
 
     function numberWithCommas(x) {
