@@ -1,106 +1,111 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="description" content="Sample of selective caching with service workers.">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>disclose.js demonstration</title>
-    <script>
-      // Service workers require HTTPS unless localhost
-      if ((!location.port || location.port == "80") && location.protocol != 'https:') {
-        location.protocol = 'https:';
-      }
-    </script>
+    <head>
+        <meta charset="utf-8">
+        <meta name="description" content="Sample of selective caching with service workers.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>disclose.js test page</title>
+        <script>
+            // Service workers require HTTPS unless localhost
+            if ((!location.port || location.port == "80") && location.protocol != 'https:') {
+                location.protocol = 'https:';
+            }
+        </script>
 
-    <style>
-      .output {
-        font-family: 'Courier';
-      }
-      #byteCount {
-          position: absolute;
-          top: 0px;
-          right: 0px;
-          background-color: lightyellow;
-          padding: 3px;
-          font-family: Courier, "Courier New";
-          font-size: 12px;
-      }
-    </style>
-  </head>
+        <style>
+            .output {
+                font-family: 'Courier';
+            }
+            #byteCount {
+                    position: absolute;
+                    top: 0px;
+                    right: 0px;
+                    background-color: lightyellow;
+                    padding: 3px;
+                    font-family: Courier, "Courier New";
+                    font-size: 12px;
+            }
+        </style>
+    </head>
 
-  <body>
-    <h1>Service Worker Network Activity</h1>
+    <body>
+        <h1>disclose.js test page</h1>
 
-    <div class="output">
-      <div id="status"></div>
-    </div>
+        <div class="output">
+            <div id="status"></div>
+        </div>
 
-    <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image1&w=100&h=100" />
-    <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image2&w=120&h=120" />
-    <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image3&w=140&h=140" />
-    <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image4&w=160&h=160" />
-    <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image5&w=180&h=180" />
-    <img src="http://lorempixel.com/640/480/abstract/" />
-    <img src="http://lorempixel.com/640/480/sports/" />
-    <img src="http://lorempixel.com/640/480/business/" />
-    <img src="http://lorempixel.com/640/480/technics/" />
-    <!--
-    -->
+        <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image1&w=100&h=100" />
+        <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image2&w=120&h=120" />
+        <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image3&w=140&h=140" />
+        <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image4&w=160&h=160" />
+        <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image5&w=180&h=180" />
+        <!--
+        <img src="http://lorempixel.com/640/480/abstract/" />
+        <img src="http://lorempixel.com/640/480/sports/" />
+        <img src="http://lorempixel.com/640/480/business/" />
+        <img src="http://lorempixel.com/640/480/technics/" />
+        -->
 
-    <div id="byteCount">service worker uninitialised</div>
+        <div id="byteCount">service worker uninitialised</div>
 
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./service-worker.js', {scope: './'}).then(function() {
-          // Registration was successful. Now, check to see whether the service worker is controlling the page.
-          if (navigator.serviceWorker.controller) {
-            // If .controller is set, then this page is being actively controlled by the service worker.
-            document.querySelector('#status').textContent =
-              'This page is now controlled by a service worker.';
-          } else {
-            // If .controller isn't set, then prompt the user to reload the page so that the service worker can take
-            // control. Until that happens, the service worker's fetch handler won't be used.
-            document.querySelector('#status').textContent =
-              'Please reload this page to allow the service worker to handle network operations.';
-          }
-        }).catch(function(error) {
-          // Something went wrong during registration. The service-worker.js file
-          // might be unavailable or contain a syntax error.
-          document.querySelector('#status').textContent = error;
-        });
+        <script>
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./service-worker.js', {scope: './'}).then(function() {
+                    // Registration was successful. Now, check to see whether the service worker is controlling the page.
+                    if (navigator.serviceWorker.controller) {
+                        // If .controller is set, then this page is being actively controlled by the service worker.
+                        document.querySelector('#status').textContent =
+                            'This page is now controlled by a service worker.';
+                    } else {
+                        // If .controller isn't set, then prompt the user to reload the page so that the service worker can take
+                        // control. Until that happens, the service worker's fetch handler won't be used.
+                        document.querySelector('#status').textContent =
+                            'Please reload this page to allow the service worker to handle network operations.';
+                    }
+                }).catch(function(error) {
+                    // Something went wrong during registration. The service-worker.js file
+                    // might be unavailable or contain a syntax error.
+                    document.querySelector('#status').textContent = error;
+                });
 
-        // Set up listener for messages
-        // Set up a listener for messages posted from the service worker.
-        navigator.serviceWorker.addEventListener('message', function(event) {
-          var target = document.getElementById('byteCount');
-          target.textContent = numberWithCommas(event.data.bytesSinceInit + ' bytes, ' 
-                + event.data.requestsSinceInit + ' reqs since init, '
-                + 'current bw: ' + (event.data.currentBandwidth / 1024).toFixed(0) + ' KB/s, '
-                + 'max  bw: ' + (event.data.maxBandwidth/1024).toFixed(0) + ' KB/s, '
-                + event.data.inFlightRequests + ' active reqs');
-        });
-      } else {
-        // Browser doesn't support service workers.
-        alert('Service workers are not supported in the current browser.');
-        console.error('Service workers are not supported in the current browser.');
-      }
+                // Set up a listener for messages posted from the service worker.
+                navigator.serviceWorker.addEventListener('message', function(event) {
+                    var target = document.getElementById('byteCount');
+                    target.textContent = 
+                        'Since init: '
+                        + bytesToKb(event.data.bytesSinceInit) + ' KB, '
+                        + event.data.requestsSinceInit + ' reqs. '
+                        + 'Current b/w: ' + (event.data.currentBandwidth / 1024).toFixed(0) + ' KB/s. '
+                        + 'Max b/w: ' + (event.data.maxBandwidth/1024).toFixed(0) + ' KB/s. '
+                        + event.data.inFlightRequests + ' active reqs';
+                });
+            } else {
+                // Browser doesn't support service workers.
+                alert('Service workers are not supported in the current browser.');
+                console.error('Service workers are not supported in the current browser.');
+            }
 
 
-    var el = document.getElementById("byteCount");
-    if (el.addEventListener) {
-        el.addEventListener("click", resetCounter, false);
-    } else {
-        el.attachEvent('onclick', resetCounter);
-    }
+        var el = document.getElementById("byteCount");
+        if (el.addEventListener) {
+            el.addEventListener("click", resetCounter, false);
+        } else {
+            el.attachEvent('onclick', resetCounter);
+        }
 
-    function resetCounter() {
-       navigator.serviceWorker.controller.postMessage({'command': 'reset'});
-    }
+        function resetCounter() {
+            navigator.serviceWorker.controller.postMessage({'command': 'reset'});
+        }
 
-    function numberWithCommas(x) {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
-    </script>
+        function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
 
-  </body>
+        function bytesToKb(x) {
+            return numberWithCommas((x/1024).toFixed(0));
+        }
+        </script>
+
+    </body>
 </html>
