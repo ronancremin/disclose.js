@@ -24,13 +24,16 @@ if ('serviceWorker' in navigator) {
 
         // check if any ongoing requests
         if (event.data.inFlightRequests == 0) {
-            target.innerHTML = '';
+            target.className = 'finished';
             console.log(
                 'Stats since service worker initialized: '
                 + bytesToKb(event.data.bytesSinceInit) + ' KB, '
                 + event.data.requestsSinceInit + ' reqs. '
             );
+            target.innerHTML = event.data.lastLoadEventBandwidth + ' KB/s';
+            console.log('Last load event bandwidth:', event.data.lastLoadEventBandwidth, 'KB/s');
         } else {
+            if (target.className != 'inProgress') target.className = 'inProgress';
             target.innerHTML =
                 'B/W: ' +
                 (event.data.currentBandwidth).toFixed(0) +

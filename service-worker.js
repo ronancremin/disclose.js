@@ -47,7 +47,6 @@ self.addEventListener('fetch', function(event) {
                 console.table(completedRequests);
                 lastLoadEventBandwidth = parseInt(maxBandwidth);
                 maxBandwidth = 0;
-                console.log('  last load event BW was', numberWithCommas(lastLoadEventBandwidth), 'KB/s');
             }
         })
     .then(() => updateBrowser())
@@ -105,6 +104,7 @@ function updateBrowser() {
         bytesSinceInit: bytesSinceInit,
         requestsSinceInit: requestsSinceInit,
         inFlightRequests: Object.keys(activeRequests).length,
+        lastLoadEventBandwidth: lastLoadEventBandwidth,
         currentBandwidth: currentBandwidth,
         maxBandwidth: maxBandwidth
     });
