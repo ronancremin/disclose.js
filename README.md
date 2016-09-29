@@ -7,7 +7,7 @@ This is a service-worker script that allows a client page to read network bandwi
 # Details
 Network bandwidth is made available in two forms to the client browser:
  1. The current real-time bandwidth (currentBandwidth). This is measured as the sum of the average transfer rate of all current in-flight requests
- 2. The maximum bandwidth of the last (lastLoadEventBandwidth). This is the maximum transfer rate achieved measured during the last set of fetches i.e. a period of network activity surrounded on both sides by periods in which no activity took place.
+ 2. The maximum bandwidth of the last set of requests made (lastLoadEventBandwidth). This is the maximum transfer rate achieved measured during the last set of fetches i.e. a period of network activity surrounded on both sides by periods in which no activity took place.
 
 The bandwidth details are made available via messages posted by the service worker.
 
