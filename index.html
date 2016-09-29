@@ -11,6 +11,7 @@
                 location.protocol = 'https:';
             }
         </script>
+        <script src="script.js" type="text/javascript"></script>
 
         <style>
             .output {
@@ -20,10 +21,13 @@
                     position: absolute;
                     top: 0px;
                     right: 0px;
-                    background-color: lightyellow;
+                    color: lightgray;
                     padding: 3px;
-                    font-family: Courier, "Courier New";
-                    font-size: 12px;
+                    font-family: Arial;
+                    font-size: 30px;
+                    font-weight: bold;
+                    letter-spacing: -1px;
+                    text-align: right;
             }
         </style>
     </head>
@@ -31,83 +35,20 @@
     <body>
         <h1>disclose.js test page</h1>
 
-        <div class="output">
+        <p class="output">
             <div id="status"></div>
+        </p>
+
+        <div>
+            <img src="https://unsplash.it/300/?random" alt="placeholder #1 image from unsplash"/>
+            <img src="https://unsplash.it/g/300/" alt="placeholder #3 image from unsplash"/>
+            <img src="https://unsplash.it/300/?blur" alt="placeholder #4 image from unsplash"/>
+            <img src="https://unsplash.it/450/300/" alt="placeholder #5 image from unsplash"/>
+            <img src="https://unsplash.it/450/300/" alt="placeholder #6 image from unsplash"/>
+            <img src="https://unsplash.it/900/300/" alt="placeholder #2 image from unsplash"/>
         </div>
 
-        <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image1&w=100&h=100" />
-        <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image2&w=120&h=120" />
-        <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image3&w=140&h=140" />
-        <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image4&w=160&h=160" />
-        <img src="https://placeholdit.imgix.net/~text?txtsize=33&txt=Image5&w=180&h=180" />
-        <img src="http://lorempixel.com/640/480/abstract/" />
-        <img src="http://lorempixel.com/640/480/sports/" />
-        <img src="http://lorempixel.com/640/480/business/" />
-        <img src="http://lorempixel.com/640/480/technics/" />
-        <!--
-        -->
+        <div id="byteCount"></div>
 
-        <div id="byteCount">service worker uninitialised</div>
-
-        <script>
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./service-worker.js', {scope: './'}).then(function() {
-                    // Registration was successful. Now, check to see whether the service worker is controlling the page.
-                    if (navigator.serviceWorker.controller) {
-                        // If .controller is set, then this page is being actively controlled by the service worker.
-                        document.querySelector('#status').textContent =
-                            'This page is now controlled by a service worker.';
-                    } else {
-                        // If .controller isn't set, then prompt the user to reload the page so that the service worker can take
-                        // control. Until that happens, the service worker's fetch handler won't be used.
-                        document.querySelector('#status').textContent =
-                            'Please reload this page to allow the service worker to handle network operations.';
-                    }
-                }).catch(function(error) {
-                    // Something went wrong during registration. The service-worker.js file
-                    // might be unavailable or contain a syntax error.
-                    document.querySelector('#status').textContent = error;
-                });
-
-                // Set up a listener for messages posted from the service worker.
-                navigator.serviceWorker.addEventListener('message', function(event) {
-                    var target = document.getElementById('byteCount');
-                    target.textContent = 
-                        'Since init: '
-                        + bytesToKb(event.data.bytesSinceInit) + ' KB, '
-                        + event.data.requestsSinceInit + ' reqs. '
-                        + 'Current b/w: ' + (event.data.currentBandwidth / 1024).toFixed(0) + ' KB/s. '
-                        + 'Max b/w: ' + (event.data.maxBandwidth/1024).toFixed(0) + ' KB/s. '
-                        + event.data.inFlightRequests + ' active reqs';
-                });
-            } else {
-                // Browser doesn't support service workers.
-                alert('Service workers are not supported in the current browser.');
-                console.error('Service workers are not supported in the current browser.');
-            }
-
-
-            var el = document.getElementById("byteCount");
-            if (el.addEventListener) {
-                el.addEventListener("click", resetCounter, false);
-            } else {
-                el.attachEvent('onclick', resetCounter);
-            }
-
-            // reset the service worker stats
-            function resetCounter() {
-                navigator.serviceWorker.controller.postMessage({'command': 'reset'});
-            }
-
-            // return a nicely formatted string version of a floating point number
-            function numberWithCommas(x) {
-                return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            }
-
-            // return a string version of x converted bytes with nice formatting
-            function bytesToKb(x) {
-                return numberWithCommas((x/1024).toFixed(0));
-            }
-        </script>
     </body>
 </html>

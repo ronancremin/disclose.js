@@ -4,8 +4,8 @@ var bytesSinceInit = 0,
     completedRequests = {};
 
 var maxBandwidth = 0,
-    minBandwidth = 0,
-    currentBandwidth = 0;
+    currentBandwidth = 0,
+    lastLoadEventBandwidth = null;
 
 
 self.clients.matchAll().then(function(clients) {
@@ -29,6 +29,7 @@ self.addEventListener('fetch', function(event) {
     requestsSinceInit++;
     updateBrowser();
 
+    //fetch(event.request.url, {mode: 'no-cors'})
     fetch(event.request.url)
         .then(res => consume(res.body.getReader(), 0, url))
         //.then(() => console.log('consume finished for ' + event.request.url))
@@ -44,6 +45,9 @@ self.addEventListener('fetch', function(event) {
             if (Object.keys(activeRequests).length == 0) {
                 console.log('No outstanding requests, completed requests are:');
                 console.table(completedRequests);
+                lastLoadEventBandwidth = parseInt(maxBandwidth);
+                maxBandwidth = 0;
+                console.log('  last load event BW was', numberWithCommas(lastLoadEventBandwidth), 'KB/s');
             }
         })
     .then(() => updateBrowser())
@@ -54,18 +58,18 @@ self.addEventListener('fetch', function(event) {
 
 // handle messages from browser
 self.addEventListener('message', function(event) {
-    console.log('SW got message', event.data);
+    console.log('SW got message from browser:', event.data.command);
     if (event.data.command == 'reset') {
         self.bytesSinceInit = 0;
         self.requestsSinceInit = 0;
         self.maxBandwidth = 0;
-        self.minBandwidth = 0;
         self.currentBandwidth = 0;
+        self.lastLoadEventBandwidth = 0;
         self.activeRequests = {};
         self.completedRequests = {};
         updateBrowser();
     } else {
-        console.log('Ignoring command');
+        console.log('Ignoring unknown command');
     }
 })
 
@@ -74,7 +78,7 @@ self.addEventListener('message', function(event) {
 function consume(reader, total, url) {
     //console.log('consume running for', url);
     var total = typeof total !== 'undefined' ? total : 0;
-    calculateBandwidth();
+    calculateActiveBandwidth();
     return reader.read().then(function(result) {
         if (result.done) {
             console.log('Fetch finished: ' + (total/1024).toFixed(1) + 'KB');
@@ -96,7 +100,7 @@ function consume(reader, total, url) {
 
 // Send updated information to the browser layer
 function updateBrowser() {
-    calculateBandwidth();
+    calculateActiveBandwidth();
     sendMessageToBrowser({
         bytesSinceInit: bytesSinceInit,
         requestsSinceInit: requestsSinceInit,
@@ -117,21 +121,29 @@ function sendMessageToBrowser(message) {
 }
 
 
-// Loops through in-flight requests' current status to estimate bandwidth
-function calculateBandwidth() {
+// Loops through in-flight requests' current status to estimate current bandwidth
+function calculateActiveBandwidth() {
     if (Object.keys(activeRequests).length == 0) {
-        currentBandwidth = 0;
         return;
     }
 
+    // calculate BW of current in-flight requests
     var tmpBandwidth = 0;
     for (var url in activeRequests) {
         if (activeRequests.hasOwnProperty(url)) {
             if (activeRequests[url].elapsedTime) { // check for non-zero
-                tmpBandwidth += activeRequests[url].bytes / activeRequests[url].elapsedTime * 1000;
+                tmpBandwidth += activeRequests[url].bytes / activeRequests[url].elapsedTime;
             }
         }
     }
-    if (tmpBandwidth != 0) currentBandwidth = tmpBandwidth;
+    if (tmpBandwidth != 0) {
+        currentBandwidth = tmpBandwidth;
+    }
     maxBandwidth = currentBandwidth > maxBandwidth ? currentBandwidth : maxBandwidth;
+}
+
+
+// return a nicely formatted string version of a floating point number
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
